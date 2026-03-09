@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mark 1 · Panel de Sincronización</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0F172A; color: #E2E8F0; min-height: 100vh; }
+  .header { background: #1E293B; border-bottom: 3px solid #D0202F; padding: 18px 32px; display: flex; align-items: center; gap: 16px; }
+  .header h1 { font-size: 1.2rem; font-weight: 700; color: #F1F5F9; }
+  .header .badge { background: #D0202F; color: #fff; font-size: 0.7rem; padding: 3px 10px; border-radius: 3px; font-weight: 700; letter-spacing: 1px; }
+  .container { max-width: 900px; margin: 32px auto; padding: 0 24px; }
+  .card { background: #1E293B; border-radius: 10px; padding: 24px; margin-bottom: 20px; border: 1px solid #334155; }
+  .card-title { font-size: 1rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat { background: #0F172A; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #334155; }
+  .stat-val { font-size: 1.8rem; font-weight: 700; color: #38BDF8; }
+  .stat-label { font-size: 0.72rem; color: #64748B; margin-top: 4px; text-transform: uppercase; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+  .btn-primary { background: #0F69C4; color: #fff; } .btn-primary:hover { background: #0A4F96; }
+  .btn-warning { background: #B45309; color: #fff; } .btn-warning:hover { background: #92400E; }
+  .btn-success { background: #15803D; color: #fff; } .btn-success:hover { background: #166534; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .log-box { background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 16px; height: 340px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.78rem; line-height: 1.6; }
+  .log-line { padding: 1px 0; }
+  .log-line.ok { color: #4ADE80; }
+  .log-line.err { color: #F87171; }
+  .log-line.info { color: #94A3B8; }
+  .log-line.head { color: #38BDF8; font-weight: bold; }
+  .range-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  label { font-size: 0.8rem; color: #94A3B8; display: block; margin-bottom: 4px; }
+  select, input[type=number] { width: 100%; background: #0F172A; border: 1px solid #334155; color: #E2E8F0; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; }
+  .progress { height: 6px; background: #334155; border-radius: 3px; margin: 12px 0; overflow: hidden; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, #0F69C4, #38BDF8); width: 0%; transition: width .3s; border-radius: 3px; }
+  .link-dashboard { color: #38BDF8; text-decoration: none; font-size: 0.85rem; }
+  .link-dashboard:hover { text-decoration: underline; }
+  #etl-status { font-size: 0.8rem; color: #64748B; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="badge">MARK 1</div>
+  </div>
+  <h1>Panel de Sincronización — DSSO · Servicio de Salud Osorno</h1>
+</div>
+
+<div class="container">
+
+  <!-- Estado BD -->
+  <div class="card">
+    <div class="card-title">📊 Estado de la Base de Datos</div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-val" id="st-total">—</div><div class="stat-label">OCs en BD</div></div>
+      <div class="stat"><div class="stat-val" id="st-detalles">—</div><div class="stat-label">Líneas detalle</div></div>
+      <div class="stat"><div class="stat-val" id="st-dias">—</div><div class="stat-label">Días procesados</div></div>
+      <div class="stat"><div class="stat-val" id="st-ultimo" style="font-size:0.9rem">—</div><div class="stat-label">Última sync</div></div>
+    </div>
+    <div id="etl-status" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- Sincronización -->
+  <div class="card">
+    <div class="card-title">🔄 Sincronización</div>
+    <div class="range-grid">
+      <div>
+        <label>Año desde</label>
+        <select id="anio-desde"></select>
+      </div>
+      <div>
+        <label>Año hasta</label>
+        <select id="anio-hasta"></select>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary"  onclick="sync('rango')">▶ Sincronizar rango</button>
+      <button class="btn btn-success"  onclick="sync('hoy')">📅 Solo hoy</button>
+      <button class="btn btn-warning"  onclick="sync('forzar')">⚡ Re-sync forzado</button>
+    </div>
+    <div class="progress"><div class="progress-bar" id="prog"></div></div>
+    <div id="sync-status" style="font-size:0.8rem;color:#64748B;margin-bottom:10px;"></div>
+    <div class="log-box" id="log-box">
+      <div class="log-line info">Listo para sincronizar. La primera carga histórica puede tardar varios minutos.</div>
+    </div>
+  </div>
+
+  <!-- Links -->
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:0.85rem;color:#64748B;">Una vez cargada la BD, el dashboard opera sin conexión a la API.</span>
+    <a href="../index.php" class="link-dashboard">🚀 Ir al Dashboard →</a>
+  </div>
+
+</div>
+
+<script>
+const BASE_URL = '../api/';
+
+// Poblar selectores de año
+const añoActual = new Date().getFullYear();
+['anio-desde','anio-hasta'].forEach(id => {
+  const sel = document.getElementById(id);
+  for (let a = 2020; a <= añoActual; a++) {
+    const o = document.createElement('option');
+    o.value = o.textContent = a;
+    if ((id === 'anio-desde' && a === 2020) || (id === 'anio-hasta' && a === añoActual)) o.selected = true;
+    sel.appendChild(o);
+  }
+});
+
+// Cargar estado inicial
+async function cargarEstado() {
+  try {
+    const r = await fetch(BASE_URL + 'data.php?action=etl_status');
+    const d = await r.json();
+    document.getElementById('st-total').textContent    = d.total?.toLocaleString('es-CL') ?? '0';
+    document.getElementById('st-detalles').textContent = d.detalles?.toLocaleString('es-CL') ?? '0';
+    document.getElementById('st-dias').textContent     = d.dias ?? '0';
+    document.getElementById('st-ultimo').textContent   = d.ultimo ? d.ultimo.slice(0,16) : 'Nunca';
+    if (d.anios?.length) {
+      document.getElementById('etl-status').textContent = `Años en BD: ${d.anios.join(', ')}`;
+    }
+  } catch(e) { console.error(e); }
+}
+
+// Sincronización via SSE
+let evtSource = null;
+function sync(modo) {
+  if (evtSource) { evtSource.close(); }
+
+  const desde  = document.getElementById('anio-desde').value;
+  const hasta  = document.getElementById('anio-hasta').value;
+  const log    = document.getElementById('log-box');
+  const status = document.getElementById('sync-status');
+  const prog   = document.getElementById('prog');
+
+  log.innerHTML = '';
+  prog.style.width = '5%';
+
+  let params = `anioDesde=${desde}&anioHasta=${hasta}`;
+  if (modo === 'hoy')    params += '&hoy=1';
+  if (modo === 'forzar') params += '&forzar=1';
+
+  addLog('🚀 Iniciando sincronización...', 'head');
+  status.textContent = 'Conectando...';
+
+  evtSource = new EventSource(`../etl/sync.php?${params}`);
+
+  let lineCount = 0;
+  evtSource.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    const cls = msg.includes('✅') ? 'ok' : msg.includes('⚠') || msg.includes('Error') ? 'err' : 'info';
+    addLog(msg, cls);
+    lineCount++;
+    prog.style.width = Math.min(95, 5 + lineCount * 0.5) + '%';
+    status.textContent = msg.replace(/\[.*?\]\s*/, '').slice(0, 80);
+  };
+
+  evtSource.onerror = () => {
+    evtSource.close();
+    prog.style.width = '100%';
+    addLog('── Sincronización finalizada ──', 'head');
+    status.textContent = 'Completado.';
+    cargarEstado();
+  };
+
+  function addLog(msg, cls='info') {
+    const d = document.createElement('div');
+    d.className = 'log-line ' + cls;
+    d.textContent = msg;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+function addLog(msg, cls='info') {
+  const log = document.getElementById('log-box');
+  const d = document.createElement('div');
+  d.className = 'log-line ' + cls;
+  d.textContent = msg;
+  log.appendChild(d);
+}
+
+cargarEstado();
+setInterval(cargarEstado, 30000); // refrescar stats cada 30s
+</script>
+</body>
+</html>

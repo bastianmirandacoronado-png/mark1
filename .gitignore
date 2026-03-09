@@ -1,0 +1,7 @@
+config.php
+db/*.sqlite
+db/*.log
+db/cache/
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
