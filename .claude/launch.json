@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mark1-xampp",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "echo XAMPP already running && timeout /t 2"],
+      "port": 8080
+    }
+  ]
+}

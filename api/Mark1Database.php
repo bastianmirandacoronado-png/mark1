@@ -103,6 +103,42 @@ class Mark1Database
             CREATE INDEX IF NOT EXISTS idx_oc_unidad   ON oc_resumen(c_unidad);
             CREATE INDEX IF NOT EXISTS idx_det_codigo  ON oc_detalles(codigo_oc);
         ");
+
+        // ── Motivos manuales de cancelación / desierta (Compra Ágil) ──
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS ag_canceladas_motivo (
+                id_cotizacion  TEXT PRIMARY KEY,
+                motivo         TEXT,
+                registrado_por TEXT,
+                actualizado_en TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            );
+        ");
+
+        // ── Módulo de Garantías de Seriedad ──────────────────
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS garantias_seriedad (
+                id                INTEGER PRIMARY KEY AUTOINCREMENT,
+                cod_licitacion    TEXT NOT NULL,
+                nombre_licitacion TEXT,
+                unidad_compra     TEXT,
+                rut_empresa       TEXT,
+                empresa           TEXT NOT NULL,
+                tipo_documento    TEXT DEFAULT 'Boleta de Garantía',
+                n_documento       TEXT,
+                banco             TEXT,
+                monto             REAL,
+                fecha_vencimiento TEXT NOT NULL,
+                fecha_adjudicacion TEXT,
+                estado            TEXT NOT NULL DEFAULT 'pendiente',
+                fecha_devolucion  TEXT,
+                devuelta_a        TEXT,
+                observacion       TEXT,
+                registrado_por    TEXT,
+                cargado_en        TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_gar_licit  ON garantias_seriedad(cod_licitacion);
+            CREATE INDEX IF NOT EXISTS idx_gar_estado ON garantias_seriedad(estado);
+        ");
     }
 
     // ─────────────────────────────────────────────────────

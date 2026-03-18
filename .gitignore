@@ -1,4 +1,36 @@
-# Byte-compiled / optimized / DLL files
+# ── MARK1 · PHP + SQLite ──────────────────────────────────
+
+# Credenciales y configuración sensible (NUNCA subir)
+config.php
+
+# Base de datos SQLite (contiene datos reales)
+db/
+data/
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs y caché
+*.log
+db/cache/
+
+# Archivos temporales de desarrollo
+tmp_*.php
+*.tmp
+migrate_*.php
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Python/Django (colega) ────────────────────────────────
 __pycache__/
 *.py[codz]
 *$py.class
