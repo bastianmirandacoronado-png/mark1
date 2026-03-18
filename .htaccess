@@ -1,0 +1,19 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# Bloquear acceso directo a archivos sensibles
+<FilesMatch "^(config\.php|docker-entrypoint\.sh|render\.yaml|Dockerfile|\.gitignore)$">
+    Require all denied
+</FilesMatch>
+
+# Bloquear acceso a directorio db/
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^db/ - [F,L]
+</IfModule>
+
+# Headers de seguridad básicos
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

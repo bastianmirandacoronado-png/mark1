@@ -3,6 +3,21 @@ services:
     name: mark1
     runtime: docker
     dockerfilePath: ./Dockerfile
+    # Apache se configura para usar el PORT que Render asigna automáticamente
     envVars:
-      - key: PORT
-        value: 8080
+      - key: MP_TICKET
+        sync: false          # Lo ingresas manualmente en el dashboard de Render
+      - key: MP_ORGANISMO
+        value: "7296"
+      - key: AUTH_USER1
+        value: sso
+      - key: AUTH_PASS1
+        sync: false
+      - key: AUTH_USER2
+        value: bastian
+      - key: AUTH_PASS2
+        sync: false
+      - key: AUTH_USER3
+        value: visor
+      - key: AUTH_PASS3
+        sync: false

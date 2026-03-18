@@ -43,4 +43,12 @@ echo "config.php generado correctamente"
 mkdir -p /var/www/html/db/cache
 chmod -R 777 /var/www/html/db
 
+# Configurar Apache para escuchar en el puerto que Render asigna (var PORT)
+LISTEN_PORT="${PORT:-80}"
+echo "Configurando Apache en puerto ${LISTEN_PORT}..."
+
+# Reemplazar puerto en ports.conf
+sed -i "s/Listen 80/Listen ${LISTEN_PORT}/g" /etc/apache2/ports.conf
+sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${LISTEN_PORT}>/g" /etc/apache2/sites-enabled/*.conf 2>/dev/null || true
+
 exec "$@"
